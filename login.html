@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Stackly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --purple: #2563eb; --purple2: #60a5fa; --white: #0f172a;
+      --muted: #64748b; --border: rgba(0,0,0,0.1);
+      --mono: 'DM Mono', monospace; --display: 'Bebas Neue', sans-serif; --body: 'Inter', sans-serif;
+    }
+    html, body { height: 100%; }
+    body { font-family: var(--body); background: #f8fafc; color: var(--white); overflow-x: hidden; }
+    a { text-decoration: none; color: inherit; }
+
+    .auth-page { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+
+    /* LEFT PANEL */
+    .auth-left {
+      background: linear-gradient(145deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
+      padding: 60px; display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; overflow: hidden;
+    }
+    .auth-left::before { content: ''; position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; background: rgba(255,255,255,.06); border-radius: 50%; }
+    .auth-left::after { content: ''; position: absolute; bottom: -60px; left: -60px; width: 220px; height: 220px; background: rgba(255,255,255,.04); border-radius: 50%; }
+    .auth-brand { display: flex; align-items: center; gap: 12px; z-index: 1; position: relative; }
+    .auth-brand-icon { width: 42px; height: 42px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; backdrop-filter: blur(8px); }
+    .auth-brand-name { font-family: var(--display); font-size: 28px; letter-spacing: 3px; color: #fff; }
+    .auth-left-content { position: relative; z-index: 1; }
+    .auth-left-content h2 { font-family: var(--display); font-size: clamp(44px, 5vw, 70px); line-height: .92; letter-spacing: 1px; color: #fff; text-transform: uppercase; margin-bottom: 20px; }
+    .auth-left-content p { color: rgba(255,255,255,.7); font-size: 15px; line-height: 1.7; max-width: 360px; margin-bottom: 36px; }
+    .auth-features { display: flex; flex-direction: column; gap: 14px; }
+    .auth-feature { display: flex; align-items: center; gap: 12px; }
+    .auth-feature-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #fff; flex-shrink: 0; }
+    .auth-feature span { color: rgba(255,255,255,.85); font-size: 14px; font-weight: 500; }
+    .auth-left-bottom { position: relative; z-index: 1; }
+    .auth-quote { border-left: 3px solid rgba(255,255,255,.3); padding-left: 20px; color: rgba(255,255,255,.6); font-size: 13px; line-height: 1.6; font-style: italic; }
+
+    /* RIGHT PANEL */
+    .auth-right { padding: 60px; display: flex; align-items: center; justify-content: center; background: #fff; }
+    .auth-form-wrap { width: 100%; max-width: 420px; }
+    .auth-form-wrap h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    .auth-form-wrap > p { color: var(--muted); font-size: 14px; margin-bottom: 36px; }
+    .auth-form-wrap > p a { color: var(--purple); font-weight: 600; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; padding: 13px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: var(--body); color: var(--white); background: #f8fafc; outline: none; transition: border-color .3s, box-shadow .3s; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: #fff; }
+    .form-group .error { display: block; font-size: 11px; color: #ef4444; margin-top: 4px; }
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 44px; }
+    .pw-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--muted); font-size: 16px; }
+    .pw-toggle:hover { color: var(--purple); }
+
+    .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .check-group { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); cursor: pointer; }
+    .check-group input[type="checkbox"] { accent-color: var(--purple); width: 14px; height: 14px; }
+    .forgot-link { font-size: 13px; color: var(--purple); font-weight: 500; }
+    .forgot-link:hover { text-decoration: underline; }
+
+    .btn-auth { width: 100%; padding: 14px; background: var(--purple); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--body); transition: background .3s, transform .2s; margin-bottom: 20px; }
+    .btn-auth:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+    .divider { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .divider span { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+
+    .social-auth { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+    .social-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; background: #fff; color: var(--white); transition: all .3s; }
+    .social-btn:hover { border-color: var(--purple); color: var(--purple); background: rgba(37,99,235,0.04); }
+    .social-btn img { width: 18px; height: 18px; }
+
+    .auth-switch { text-align: center; font-size: 14px; color: var(--muted); }
+    .auth-switch a { color: var(--purple); font-weight: 600; }
+
+    .role-pills { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+    .role-pill { padding: 7px 16px; border: 1.5px solid var(--border); border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--muted); transition: all .3s; text-transform: uppercase; letter-spacing: .5px; }
+    .role-pill.active, .role-pill:hover { border-color: var(--purple); color: var(--purple); background: rgba(37,99,235,0.06); }
+    .role-label { font-size: 12px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: block; }
+
+    @media (max-width: 900px) { .auth-page { grid-template-columns: 1fr; } .auth-left { display: none; } .auth-right { padding: 40px 24px; } }
+    /* PRELOADER */
+    #preloader { position:fixed; inset:0; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:99999; transition:opacity 0.7s ease; }
+    .pl-logo { width:140px; margin-bottom:36px; animation:pl-pulse 2.5s ease-in-out infinite; }
+    @keyframes pl-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.8;transform:scale(0.97)} }
+    .dna-helix { display:flex; gap:10px; align-items:center; height:60px; margin-bottom:28px; }
+    .dna-helix span { width:10px; height:10px; border-radius:50%; display:block; }
+    .dna-helix span:nth-child(odd)  { background:#2563eb; }
+    .dna-helix span:nth-child(even) { background:#60a5fa; }
+    .dna-helix span:nth-child(1){animation:dna-up   1.6s ease-in-out 0.00s infinite}
+    .dna-helix span:nth-child(2){animation:dna-down 1.6s ease-in-out 0.20s infinite}
+    .dna-helix span:nth-child(3){animation:dna-up   1.6s ease-in-out 0.40s infinite}
+    .dna-helix span:nth-child(4){animation:dna-down 1.6s ease-in-out 0.60s infinite}
+    .dna-helix span:nth-child(5){animation:dna-up   1.6s ease-in-out 0.80s infinite}
+    .dna-helix span:nth-child(6){animation:dna-down 1.6s ease-in-out 1.00s infinite}
+    .dna-helix span:nth-child(7){animation:dna-up   1.6s ease-in-out 1.20s infinite}
+    .dna-helix span:nth-child(8){animation:dna-down 1.6s ease-in-out 1.40s infinite}
+    @keyframes dna-up   {0%,100%{transform:translateY(0);opacity:.45}50%{transform:translateY(-22px);opacity:1}}
+    @keyframes dna-down {0%,100%{transform:translateY(0);opacity:.45}50%{transform:translateY(22px);opacity:1}}
+    .pl-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:5px; color:#94a3b8; text-transform:uppercase; margin-bottom:16px; animation:pl-blink 2s ease-in-out infinite; }
+    @keyframes pl-blink {0%,100%{opacity:.35}50%{opacity:1}}
+    .pl-track { width:180px; height:2px; background:rgba(37,99,235,0.12); border-radius:2px; overflow:hidden; }
+    .pl-fill { height:100%; width:0%; background:linear-gradient(90deg,#2563eb,#60a5fa); border-radius:2px; animation:pl-load 2s cubic-bezier(.4,0,.2,1) forwards; }
+    @keyframes pl-load {0%{width:0%}65%{width:75%}100%{width:100%}}
+  </style>
+</head>
+<body>
+<!-- PRELOADER -->
+<div id="preloader">
+  <img src="./images/logo.webp" class="pl-logo" alt="Stackly">
+  <div class="dna-helix">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+  </div>
+  <p class="pl-label">STACKLY &middot; INITIALIZING</p>
+  <div class="pl-track"><div class="pl-fill"></div></div>
+</div>
+<div class="auth-page">
+  <!-- LEFT -->
+  <div class="auth-left">
+    <div class="auth-brand">
+      <a href="index.html">
+        <img src="./images/logo.webp" class="logo-img" alt="Stackly Logo" style="width: 120px; height: auto;">
+      </a>
+    </div>
+    <div class="auth-left-content">
+      <h2>Welcome<br>Back to<br>Research</h2>
+      <p>Access your personalized research dashboard, collaborate with scientists, and track your biotechnology experiments in real time.</p>
+      <div class="auth-features">
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="ri-microscope-line"></i></div>
+          <span>Real-time Lab Analytics</span>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="ri-dna-line"></i></div>
+          <span>Genome Sequencing Tools</span>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="ri-team-line"></i></div>
+          <span>Collaborative Research Network</span>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="ri-shield-check-line"></i></div>
+          <span>ISO-Certified Security</span>
+        </div>
+      </div>
+    </div>
+    <div class="auth-left-bottom">
+      <div class="auth-quote">"Science is not only a disciple of reason but also one of romance and passion." — Stephen Hawking</div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <h1>Sign in to Stackly</h1>
+      <p>Don't have an account? <a href="404.html">Create one free</a></p>
+
+      <span class="role-label">Login As</span>
+      <div class="role-pills">
+        <div class="role-pill active" data-role="researcher" onclick="selectRole(this)">Researcher</div>
+        <div class="role-pill" data-role="patient" onclick="selectRole(this)">Patient</div>
+      </div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="loginEmail" placeholder="you@stackly.com" required>
+          <small class="error" id="emailErr"></small>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="loginPw" placeholder="Enter your password" required>
+            <i class="ri-eye-off-line pw-toggle" id="pwToggle" onclick="togglePw()"></i>
+          </div>
+          <small class="error" id="pwErr"></small>
+        </div>
+        <div class="form-options">
+          <label class="check-group">
+            <input type="checkbox" id="rememberMe"> Remember me
+          </label>
+          <a href="404.html" class="forgot-link">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-auth" id="loginBtn">Sign In <i class="ri-arrow-right-line"></i></button>
+      </form>
+
+      <div class="divider"><span>OR CONTINUE WITH</span></div>
+      <div class="social-auth">
+        <div class="social-btn"><i class="ri-google-fill" style="color:#ea4335"></i> Google</div>
+        <div class="social-btn"><i class="ri-microsoft-fill" style="color:#00a4ef"></i> Microsoft</div>
+      </div>
+      <div class="auth-switch">New to Stackly? <a href="404.html">Create account</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedRole = 'researcher';
+function selectRole(el) {
+  document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  selectedRole = el.getAttribute('data-role');
+}
+function togglePw() {
+  const pw = document.getElementById('loginPw');
+  const ic = document.getElementById('pwToggle');
+  pw.type = pw.type === 'password' ? 'text' : 'password';
+  ic.className = pw.type === 'password' ? 'ri-eye-off-line pw-toggle' : 'ri-eye-line pw-toggle';
+}
+function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw = document.getElementById('loginPw').value.trim();
+  let valid = true;
+  document.getElementById('emailErr').textContent = '';
+  document.getElementById('pwErr').textContent = '';
+  if (!email) { document.getElementById('emailErr').textContent = 'Email is required.'; valid = false; }
+  if (!pw) { document.getElementById('pwErr').textContent = 'Password is required.'; valid = false; }
+  if (!valid) return;
+  
+  localStorage.setItem('userEmail', email);
+  
+  const btn = document.getElementById('loginBtn');
+  btn.textContent = 'Signing in...';
+  btn.disabled = true;
+  setTimeout(() => {
+    if (selectedRole === 'admin') window.location.href = 'dashboard.html';
+    else if (selectedRole === 'researcher') window.location.href = 'researcher-dashboard.html';
+    else window.location.href = 'patient-dashboard.html';
+  }, 800);
+}
+/* PRELOADER */
+window.addEventListener("load", () => {
+  const pl = document.getElementById("preloader");
+  setTimeout(() => { pl.style.opacity = "0"; setTimeout(() => { pl.style.display = "none"; }, 700); }, 2200);
+});
+</script>
+</body>
+</html>

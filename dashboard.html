@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Stackly</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root { --purple:#2563eb; --purple2:#60a5fa; --white:#0f172a; --muted:#64748b; --border:rgba(0,0,0,0.1); --dark:#f8fafc; --panel:#f1f5f9; --body:'Inter',sans-serif; --display:'Bebas Neue',sans-serif; --mono:'DM Mono',monospace; }
+    html,body { height:100%; }
+    body { font-family:var(--body); background:var(--dark); color:var(--white); overflow-x:hidden; }
+    a { text-decoration:none; color:inherit; }
+    ul { list-style:none; }
+
+    /* LAYOUT */
+    .dash-layout { display:flex; min-height:100vh; }
+
+    /* SIDEBAR */
+    .sidebar { width:260px; background:#fff; border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:100; transition:transform .3s; }
+    .sidebar-brand { padding:24px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .brand-icon { width:36px; height:36px; background:linear-gradient(135deg,var(--purple),var(--purple2)); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; }
+    .brand-name { font-family:var(--display); font-size:22px; letter-spacing:2px; color:var(--white); }
+    .sidebar-menu { flex:1; padding:16px 0; overflow-y:auto; }
+    .menu-label { font-size:10px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--muted); padding:12px 22px 6px; }
+    .menu-item { display:flex; align-items:center; gap:12px; padding:11px 22px; color:var(--muted); font-size:14px; font-weight:500; cursor:pointer; transition:all .3s; border-left:3px solid transparent; position:relative; }
+    .menu-item:hover { color:var(--purple); background:rgba(37,99,235,.05); }
+    .menu-item.active { color:var(--purple); background:rgba(37,99,235,.08); border-left-color:var(--purple); }
+    .menu-item i { font-size:18px; }
+    .menu-badge { margin-left:auto; background:var(--purple); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; }
+    .sidebar-footer { padding:18px 22px; border-top:1px solid var(--border); }
+    .sidebar-user { display:flex; align-items:center; gap:10px; }
+    .user-avatar { width:38px; height:38px; background:linear-gradient(135deg,var(--purple),var(--purple2)); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; flex-shrink:0; }
+    .user-info p { font-size:13px; font-weight:600; }
+    .user-info span { font-size:11px; color:var(--muted); }
+
+    /* MAIN */
+    .dash-main { flex:1; margin-left:0; min-height:100vh; }
+
+    /* TOPBAR */
+    .topbar { background:#fff; border-bottom:1px solid var(--border); padding:0 32px; height:68px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-left { display:flex; align-items:center; gap:16px; }
+    .menu-toggle { width:36px; height:36px; border:1px solid var(--border); border-radius:8px; display:none; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); font-size:18px; }
+    .back-btn { display:flex; align-items:center; gap:7px; padding:8px 16px; background:#fff; border:1px solid var(--border); border-radius:8px; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; transition:all .3s; white-space:nowrap; text-decoration:none; }
+    .back-btn:hover { border-color:var(--purple); color:var(--purple); background:rgba(37,99,235,.04); }
+    .back-btn i { font-size:16px; }
+    .page-title h2 { font-size:18px; font-weight:700; }
+    .page-title p { font-size:12px; color:var(--muted); }
+    .topbar-search { display:flex; align-items:center; background:var(--dark); border:1px solid var(--border); border-radius:8px; padding:8px 14px; gap:8px; min-width:240px; }
+    .topbar-search input { border:none; background:transparent; outline:none; font-size:13px; color:var(--white); font-family:var(--body); width:100%; }
+    .topbar-search i { color:var(--muted); font-size:15px; }
+    .topbar-right { display:flex; align-items:center; gap:12px; }
+    .topbar-icon { width:38px; height:38px; border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); font-size:18px; transition:all .3s; position:relative; }
+    .topbar-icon:hover { border-color:var(--purple); color:var(--purple); }
+    .topbar-notif { position:absolute; top:-4px; right:-4px; width:16px; height:16px; background:#ef4444; border-radius:50%; font-size:9px; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .dash-greeting { display:flex; align-items:center; gap:10px; }
+    .dash-greeting span { font-size:14px; font-weight:600; }
+
+    /* CONTENT */
+    .dash-content { padding:28px 32px; }
+
+    /* HERO BANNER */
+    .dash-banner { background:linear-gradient(135deg,#1e3a8a,#2563eb); border-radius:16px; padding:28px 32px; margin-bottom:28px; display:flex; align-items:center; justify-content:space-between; position:relative; overflow:hidden; }
+    .dash-banner::before { content:''; position:absolute; top:-60px; right:-60px; width:200px; height:200px; background:rgba(255,255,255,.06); border-radius:50%; }
+    .dash-banner-text h3 { font-family:var(--display); font-size:32px; letter-spacing:1px; color:#fff; }
+    .dash-banner-text p { color:rgba(255,255,255,.7); font-size:14px; margin-top:6px; }
+    .dash-banner-btn { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; padding:10px 22px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; backdrop-filter:blur(8px); transition:background .3s; white-space:nowrap; flex-shrink:0; }
+    .dash-banner-btn:hover { background:rgba(255,255,255,.25); }
+
+    /* STAT CARDS */
+    .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:28px; }
+    .stat-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:22px; transition:all .3s; }
+    .stat-card:hover { transform:translateY(-3px); box-shadow:0 12px 40px rgba(37,99,235,.1); }
+    .stat-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .stat-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .stat-icon.blue { background:rgba(37,99,235,.1); color:var(--purple); }
+    .stat-icon.green { background:rgba(34,197,94,.1); color:#22c55e; }
+    .stat-icon.orange { background:rgba(249,115,22,.1); color:#f97316; }
+    .stat-icon.red { background:rgba(239,68,68,.1); color:#ef4444; }
+    .stat-change { font-size:12px; font-weight:600; display:flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; }
+    .stat-change.up { background:#dcfce7; color:#16a34a; }
+    .stat-change.down { background:#fee2e2; color:#dc2626; }
+    .stat-val { font-size:28px; font-weight:700; margin-bottom:4px; }
+    .stat-label { font-size:13px; color:var(--muted); }
+
+    /* CHART GRID */
+    .chart-grid { display:grid; grid-template-columns:2fr 1fr; gap:18px; margin-bottom:28px; }
+    .chart-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:24px; }
+    .chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+    .chart-header h4 { font-size:15px; font-weight:700; }
+    .chart-tabs { display:flex; gap:4px; background:var(--panel); border-radius:8px; padding:3px; }
+    .chart-tab { padding:5px 14px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; color:var(--muted); transition:all .3s; }
+    .chart-tab.active { background:#fff; color:var(--purple); box-shadow:0 1px 6px rgba(0,0,0,.08); }
+
+    /* MINI GRID */
+    .mini-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin-bottom:28px; }
+    .mini-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:22px; text-align:center; transition:all .3s; }
+    .mini-card:hover { border-color:var(--purple); transform:translateY(-3px); }
+    .mini-icon { width:52px; height:52px; background:rgba(37,99,235,.1); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--purple); margin:0 auto 12px; }
+    .mini-val { font-size:26px; font-weight:700; margin-bottom:4px; }
+    .mini-label { font-size:12px; color:var(--muted); font-weight:500; }
+    .mini-sub { font-size:11px; color:var(--purple); margin-top:4px; }
+
+    /* TABLES */
+    .table-grid { display:grid; grid-template-columns:1.5fr 1fr; gap:18px; margin-bottom:28px; }
+    .table-card { background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    .table-head { padding:18px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .table-head h4 { font-size:15px; font-weight:700; }
+    .view-all { font-size:12px; color:var(--purple); font-weight:600; cursor:pointer; }
+    table { width:100%; border-collapse:collapse; }
+    th { padding:10px 22px; font-size:11px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); background:var(--panel); text-align:left; }
+    td { padding:13px 22px; font-size:13px; border-bottom:1px solid var(--border); }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(37,99,235,.02); }
+    .status-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+    .status-pill.active { background:#dcfce7; color:#16a34a; }
+    .status-pill.pending { background:#fef9c3; color:#ca8a04; }
+    .status-pill.done { background:#dbeafe; color:#1d4ed8; }
+    .status-pill::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
+
+    /* PROGRESS BARS */
+    .progress-item { margin-bottom:14px; }
+    .prog-top { display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
+    .prog-bar { height:6px; background:var(--panel); border-radius:3px; overflow:hidden; }
+    .prog-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--purple),var(--purple2)); }
+
+    /* MOBILE RESPONSIVE */
+    @media(max-width:1024px){
+      .stat-grid { grid-template-columns:repeat(2,1fr); }
+      .chart-grid, .table-grid { grid-template-columns:1fr; }
+      .mini-grid { grid-template-columns:repeat(2,1fr); }
+    }
+    @media(max-width:768px){
+      .topbar { padding:0 16px; height:60px; gap:8px; }
+      .topbar-search { display:none; }
+      .dash-greeting span { display:none; }
+      .page-title h2 { font-size:16px; }
+      .page-title p { font-size:11px; }
+      .dash-content { padding:20px 16px; }
+      .dash-banner { flex-direction:column; align-items:flex-start; gap:16px; padding:20px; }
+      .dash-banner-text h3 { font-size:22px; }
+      .stat-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
+      .chart-grid, .table-grid { grid-template-columns:1fr; }
+      .mini-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
+      td, th { padding:10px 12px; font-size:12px; }
+    }
+    @media(max-width:480px){
+      .stat-grid { grid-template-columns:1fr; }
+      .mini-grid { grid-template-columns:1fr; }
+      .topbar-icon { width:34px; height:34px; }
+      .dash-banner-text h3 { font-size:18px; }
+    }
+    /* PRELOADER */
+    #preloader { position:fixed; inset:0; background:#ffffff; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:99999; transition:opacity 0.7s ease; }
+    .pl-logo { width:140px; margin-bottom:36px; animation:pl-pulse 2.5s ease-in-out infinite; }
+    @keyframes pl-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.8;transform:scale(0.97)} }
+    .dna-helix { display:flex; gap:10px; align-items:center; height:60px; margin-bottom:28px; }
+    .dna-helix span { width:10px; height:10px; border-radius:50%; display:block; }
+    .dna-helix span:nth-child(odd)  { background:#2563eb; }
+    .dna-helix span:nth-child(even) { background:#60a5fa; }
+    .dna-helix span:nth-child(1){animation:dna-up   1.6s ease-in-out 0.00s infinite}
+    .dna-helix span:nth-child(2){animation:dna-down 1.6s ease-in-out 0.20s infinite}
+    .dna-helix span:nth-child(3){animation:dna-up   1.6s ease-in-out 0.40s infinite}
+    .dna-helix span:nth-child(4){animation:dna-down 1.6s ease-in-out 0.60s infinite}
+    .dna-helix span:nth-child(5){animation:dna-up   1.6s ease-in-out 0.80s infinite}
+    .dna-helix span:nth-child(6){animation:dna-down 1.6s ease-in-out 1.00s infinite}
+    .dna-helix span:nth-child(7){animation:dna-up   1.6s ease-in-out 1.20s infinite}
+    .dna-helix span:nth-child(8){animation:dna-down 1.6s ease-in-out 1.40s infinite}
+    @keyframes dna-up   {0%,100%{transform:translateY(0);opacity:.45}50%{transform:translateY(-22px);opacity:1}}
+    @keyframes dna-down {0%,100%{transform:translateY(0);opacity:.45}50%{transform:translateY(22px);opacity:1}}
+    .pl-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:5px; color:#94a3b8; text-transform:uppercase; margin-bottom:16px; animation:pl-blink 2s ease-in-out infinite; }
+    @keyframes pl-blink {0%,100%{opacity:.35}50%{opacity:1}}
+    .pl-track { width:180px; height:2px; background:rgba(37,99,235,0.12); border-radius:2px; overflow:hidden; }
+    .pl-fill { height:100%; width:0%; background:linear-gradient(90deg,#2563eb,#60a5fa); border-radius:2px; animation:pl-load 2s cubic-bezier(.4,0,.2,1) forwards; }
+    @keyframes pl-load {0%{width:0%}65%{width:75%}100%{width:100%}}
+  </style>
+</head>
+<body>
+<!-- PRELOADER -->
+<div id="preloader">
+  <img src="./images/logo.webp" class="pl-logo" alt="Stackly">
+  <div class="dna-helix">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+  </div>
+  <p class="pl-label">STACKLY &middot; INITIALIZING</p>
+  <div class="pl-track"><div class="pl-fill"></div></div>
+</div>
+<div class="dash-layout">
+
+
+
+  <!-- MAIN -->
+  <div class="dash-main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <a href="index.html" class="back-btn"><i class="ri-arrow-left-line"></i> Go Back</a>
+        <div class="page-title"><h2>Admin Dashboard</h2><p>Tuesday, 17 June 2026</p></div>
+      </div>
+      <div class="topbar-search">
+        <i class="ri-search-line"></i>
+        <input type="text" placeholder="Search experiments, researchers...">
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-icon"><i class="ri-mail-line"></i></div>
+        <div class="dash-greeting">
+          <div class="user-avatar" style="width:36px;height:36px;font-size:14px"><i class="ri-user-3-line"></i></div>
+          <span>Dr. Karthik</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-content">
+      <!-- BANNER -->
+      <div class="dash-banner">
+        <div class="dash-banner-text">
+          <h3>Good Morning, Dr. Karthik! 👋</h3>
+          <p>You have 4 pending lab reports and 2 new researcher applications awaiting approval.</p>
+        </div>
+        <button class="dash-banner-btn" onclick="window.location.href='404.html'">Review Reports <i class="ri-arrow-right-line"></i></button>
+      </div>
+
+      <!-- STATS -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon blue"><i class="ri-flask-line"></i></div>
+            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i>+12%</div>
+          </div>
+          <div class="stat-val">128</div>
+          <div class="stat-label">Total Experiments</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon green"><i class="ri-microscope-line"></i></div>
+            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i>+8%</div>
+          </div>
+          <div class="stat-val">452</div>
+          <div class="stat-label">Samples Tested</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon orange"><i class="ri-virus-line"></i></div>
+            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i>+5%</div>
+          </div>
+          <div class="stat-val">89</div>
+          <div class="stat-label">DNA Sequencing</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <div class="stat-icon red"><i class="ri-team-line"></i></div>
+            <div class="stat-change down"><i class="ri-arrow-down-s-line"></i>-2</div>
+          </div>
+          <div class="stat-val">24</div>
+          <div class="stat-label">Active Researchers</div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h4>Gene Expression Activity</h4>
+            <div class="chart-tabs">
+              <div class="chart-tab active">Week</div>
+              <div class="chart-tab">Month</div>
+              <div class="chart-tab">Year</div>
+            </div>
+          </div>
+          <canvas id="geneChart" height="100"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header"><h4>Experiment Status</h4></div>
+          <canvas id="statusChart" height="180"></canvas>
+        </div>
+      </div>
+
+      <!-- MINI CARDS -->
+      <div class="mini-grid">
+        <div class="mini-card">
+          <div class="mini-icon"><i class="ri-microscope-line"></i></div>
+          <div class="mini-val">1,254</div>
+          <div class="mini-label">Samples Processed</div>
+          <div class="mini-sub">↑ +18% this month</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-icon"><i class="ri-virus-line"></i></div>
+          <div class="mini-val">842</div>
+          <div class="mini-label">DNA Sequences</div>
+          <div class="mini-sub">↑ +9% this month</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-icon"><i class="ri-book-open-line"></i></div>
+          <div class="mini-val">36</div>
+          <div class="mini-label">Publications</div>
+          <div class="mini-sub">↑ +4 this quarter</div>
+        </div>
+      </div>
+
+      <!-- TABLES -->
+      <div class="table-grid">
+        <div class="table-card">
+          <div class="table-head">
+            <h4>Recent Experiments</h4>
+            <span class="view-all">View All →</span>
+          </div>
+          <table>
+            <thead><tr><th>Experiment</th><th>Researcher</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>CRISPR Gene Editing Trial</td><td>Dr. Emily Carter</td><td><span class="status-pill active">Active</span></td></tr>
+              <tr><td>DNA Sequencing Study</td><td>Dr. Michael Lee</td><td><span class="status-pill pending">Pending</span></td></tr>
+              <tr><td>Cell Culture Observation</td><td>Dr. Sarah Kim</td><td><span class="status-pill done">Done</span></td></tr>
+              <tr><td>Genome Mapping</td><td>Dr. David Patel</td><td><span class="status-pill active">Active</span></td></tr>
+              <tr><td>Protein Folding Research</td><td>Dr. Olivia Brown</td><td><span class="status-pill done">Done</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-card">
+          <div class="table-head"><h4>Equipment Usage</h4></div>
+          <div style="padding:20px">
+            <div class="progress-item"><div class="prog-top"><span>PCR Machine</span><span style="font-weight:700;color:var(--purple)">72%</span></div><div class="prog-bar"><div class="prog-fill" style="width:72%"></div></div></div>
+            <div class="progress-item"><div class="prog-top"><span>DNA Sequencer</span><span style="font-weight:700;color:var(--purple)">58%</span></div><div class="prog-bar"><div class="prog-fill" style="width:58%"></div></div></div>
+            <div class="progress-item"><div class="prog-top"><span>Gel Electrophoresis</span><span style="font-weight:700;color:var(--purple)">65%</span></div><div class="prog-bar"><div class="prog-fill" style="width:65%"></div></div></div>
+            <div class="progress-item"><div class="prog-top"><span>Cell Incubator</span><span style="font-weight:700;color:var(--purple)">81%</span></div><div class="prog-bar"><div class="prog-fill" style="width:81%"></div></div></div>
+            <div class="progress-item"><div class="prog-top"><span>Spectrophotometer</span><span style="font-weight:700;color:var(--purple)">47%</span></div><div class="prog-bar"><div class="prog-fill" style="width:47%"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.menu-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+document.querySelectorAll('.chart-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    this.closest('.chart-tabs').querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// Gene Expression Chart
+const gCtx = document.getElementById('geneChart').getContext('2d');
+new Chart(gCtx, {
+  type: 'line',
+  data: {
+    labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    datasets: [{
+      label: 'Gene Expression',
+      data: [65,78,82,71,95,88,92],
+      borderColor: '#2563eb',
+      backgroundColor: 'rgba(37,99,235,0.08)',
+      borderWidth: 2.5,
+      pointBackgroundColor: '#2563eb',
+      pointRadius: 4,
+      fill: true,
+      tension: 0.4
+    },{
+      label: 'DNA Samples',
+      data: [45,58,62,55,72,68,74],
+      borderColor: '#60a5fa',
+      backgroundColor: 'rgba(96,165,250,0.05)',
+      borderWidth: 2,
+      pointBackgroundColor: '#60a5fa',
+      pointRadius: 4,
+      fill: true,
+      tension: 0.4
+    }]
+  },
+  options: { responsive:true, plugins:{legend:{position:'top',labels:{usePointStyle:true,font:{size:12}}}}, scales:{y:{beginAtZero:false,grid:{color:'rgba(0,0,0,0.04)'}},x:{grid:{color:'rgba(0,0,0,0.04)'}}} }
+});
+
+// Status Donut
+const sCtx = document.getElementById('statusChart').getContext('2d');
+new Chart(sCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Active','Completed','Pending','On Hold'],
+    datasets: [{
+      data: [42,38,14,6],
+      backgroundColor: ['#2563eb','#22c55e','#f59e0b','#ef4444'],
+      borderWidth: 0,
+      hoverOffset: 6
+    }]
+  },
+  options: { responsive:true, plugins:{legend:{position:'bottom',labels:{usePointStyle:true,font:{size:12},padding:16}}}, cutout:'68%' }
+});
+/* PRELOADER */
+window.addEventListener("load", () => {
+  const pl = document.getElementById("preloader");
+  setTimeout(() => { pl.style.opacity = "0"; setTimeout(() => { pl.style.display = "none"; }, 700); }, 2200);
+  
+  const userEmail = localStorage.getItem('userEmail');
+  if (userEmail) {
+    document.querySelectorAll('.dash-greeting span').forEach(el => el.textContent = userEmail);
+    document.querySelectorAll('.user-info p').forEach(el => el.textContent = userEmail);
+  }
+});
+</script>
+</body>
+</html>
